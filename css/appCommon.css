@@ -1,0 +1,126 @@
+
+
+.mui-icon-Glocation:before{
+	content: '\e364';
+}
+.mui-icon-GlocationList:before{
+	content: '\e6e3';
+}
+
+.i-green{
+  display:block;
+  background:#209153;
+  border-radius:50%;
+  width:10px;
+  height:10px;
+  margin-top: 13px;
+  margin-left: 3px;
+  position:absolute;
+}
+.i-red{
+  display:block;
+  background: red;
+  border-radius:50%;
+  width:10px;
+  height:10px;
+  margin-top: 13px;
+  margin-left: 3px;
+  position:absolute;
+}			
+.mui-input-search{
+	line-height: 21px;
+    width: 80%;
+    height: 40px;
+    margin-bottom: 3px;
+    padding: 10px 15px;
+    -webkit-user-select: text;
+    border: 1px solid rgba(156, 151, 151,2);
+    border-radius: 3px;
+    outline: 0;
+    background-color: #fff;
+    -webkit-appearance: none;
+}
+
+.mui-input-addin{
+	font-size: 16px;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    height: 34px;
+    text-align: center;
+    border-radius: 6px;
+    text-align: left;
+}
+.mui-icon-archives:before
+{
+ content: '\e333';
+ color: #209153;
+ font-size: 26px;
+}
+
+.mui-icon-date:before
+{
+ content: '\e623';
+ color: #EC7600;
+ font-size: 26px;
+ font-weight: bold;
+}
+
+.mui-icon-carType:before
+{
+ content: '\e738';
+ color: crimson;
+ font-size: 26px;
+}
+
+.mui-icon-bg:before
+{
+ content: '\e333';
+ color: white;
+ font-size: 26px;
+}
+
+.mui-icon-money:before
+{
+ content: '\e6a5';
+ color: white;
+ font-size: 26px;
+}
+
+.mui-icon-case:before
+{
+ content: '\e6e3';
+ color: white;
+ font-size: 26px;
+}
+
+.mui-icon-start:before
+{
+ content: '\e692';
+ color: #209153;
+ font-size: 26px;
+}
+.mui-icon-destination:before
+{
+ content: '\e692';
+ color: red;
+ font-size: 26px;
+}
+
+.mui-icon-Gadd:before
+{
+ content: '\e409';
+ color:  white;
+ font-size: 22px;
+ font-weight: bold;
+}
+
+.mui-btn-commit {
+    font-size: 18px;
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+}
+.mui-table-view-li{
+	padding: 0px;
+	border-bottom: thin solid #C8C7CC ;
+}

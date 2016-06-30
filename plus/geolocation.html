@@ -1,0 +1,394 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+		<meta name="HandheldFriendly" content="true"/>
+		<meta name="MobileOptimized" content="320"/>
+		<title>交通报销</title>
+		<link rel="stylesheet" href="../css/mui.min.css" />
+		<link rel="stylesheet" href="../css/appCommon.css" />
+		<link rel="stylesheet" href="../css/mui.picker.min.css" />
+		<link rel="stylesheet" href="../css/mui.picker.css" />
+		<link rel="stylesheet" href="../css/mui.poppicker.css" />
+		<script type="text/javascript" src="../js/common.js"></script>
+		<script type="text/javascript" src="../js/mui.min.js" ></script>
+		<script type="text/javascript" src="../js/app.js" ></script>
+		<script type="text/javascript" src="../js/mui.picker.min.js" ></script>
+		<script type="text/javascript" src="../js/mui.picker.js" ></script>
+		<script type="text/javascript" src="../js/mui.poppicker.js" ></script>
+		<script type="text/javascript">
+			var count = 1;
+			
+			// 计算总费用 油价需要从数据库中取得
+			var price = 0;
+			var param1 = 0;
+			var param2 = 0;
+			var param3 = 0;
+			var carTypeList = [];
+			
+			
+			var address = '';
+			function geoInf( position) {
+				// 地址位置
+				address = position.addresses;
+			}
+			
+			// 通过定位模块获取位置信息
+			function getGeocode(id){
+				//outSet( "获取定位位置信息:" );
+				plus.geolocation.getCurrentPosition( geoInf, function ( e ) {
+					//outSet( "获取定位位置信息失败："+e.message );
+				},{geocode:true,provider:'amap'});
+				
+				if(address == undefined){
+					plus.nativeUI.toast("定位失败，请手动输入地址。");
+					return false;
+				}else{
+					// 获取地址
+					document.getElementById(id).value = address;
+				}
+				
+			}
+			
+			function Gadd(){
+				//plus.nativeUI.toast('添加新纪录');
+				var uiList = document.getElementById("list");
+				var btns = mui('.mui-input-addin');
+				var flag = true;
+				btns.each(function(i, btn) {
+					if(btn.value == ''){
+						/*mui.alert("请填写信息完整后再继续添加");*/
+						plus.nativeUI.toast("请填写信息完整后再继续添加");
+						btn.focus();
+						flag = false;
+					}
+					
+					return flag;
+				});
+				
+				if(flag){
+				count = count+1;
+				var start = 'start'+count;
+				var destination = 'destination'+count;
+				var distance = 'distance'+count;
+				var startDate = 'startDate'+count;
+				var showUserPicker = 'showUserPicker'+count;
+				var Companycase = 'Companycase'+count
+				var money = 'money'+count;
+				var li = document.createElement('li');
+				li.className = 'mui-table-view-li';
+				var naiyo = '';
+				naiyo += '<div id="dcontent" class="dcontent" style="padding-top:10px;">';
+				naiyo += '<div class="mui-input-row mui-search">';
+				naiyo += '<div>';
+				naiyo += '<span class="mui-icon mui-icon-start"></span>';
+				naiyo += '<input id="'+start+'" class="mui-input-search mui-input-addin"   placeholder="输入起点">';
+				naiyo += '<span class="mui-icon mui-icon-archives" onclick="getGeocode('+"'"+start+"'"+')"></span>';
+				naiyo += '</div>';
+				naiyo += '<div>';
+				naiyo += '<span class="mui-icon mui-icon-destination"></span>';
+				naiyo += '<input id="'+destination+'" class="mui-input-search mui-input-addin"   placeholder="输入终点">';
+				naiyo += '<span class="mui-icon mui-icon-archives" onclick="getGeocode('+"'"+destination+"'"+')"></span>';
+				naiyo += '</div>';
+				naiyo += '<div>';
+				naiyo += '<span class="mui-icon mui-icon-case"></span>';
+				naiyo += '<input id="'+startDate+'" name="startDate" data-options=\'{"type":"datetime"}\'  placeholder="输入时间" class="mui-input-search mui-input-addin"/>';
+				naiyo += '<span class="mui-icon mui-icon-date" onclick="getDate('+count+')"></span>';
+				naiyo += '</div>';
+				naiyo += '<div>';
+				naiyo += '<span class="mui-icon mui-icon-case"></span>';
+				naiyo += '<input id="'+showUserPicker+'" class="mui-input-search mui-input-addin"  placeholder="输入车型">';
+				naiyo += '<span class="mui-icon mui-icon-carType" onclick="carType('+count+')"></span>';
+				naiyo += '</div>';
+				naiyo += '<div>';
+				naiyo += '<span class="mui-icon mui-icon-money"></span>';
+				naiyo += '<input id="'+distance+'" class="mui-input-search mui-input-addin"  onblur="countMoney('+count+')"   placeholder="输入公里数">';
+				naiyo += '<span class="mui-icon mui-icon-bg"></span>';
+				naiyo += '</div>';
+				naiyo += '<div>';
+				naiyo += '<span class="mui-icon mui-icon-case"></span>';
+				naiyo += '<input id="'+Companycase+'" class="mui-input-search mui-input-addin"   placeholder="输入事由">';
+				naiyo += '<span class="mui-icon mui-icon-bg"></span>';
+				naiyo += '</div>';
+				naiyo += '<div>';
+				naiyo += '<span class="mui-icon mui-icon-money"></span>';
+				naiyo += '<input id="'+money+'" class="mui-input-search mui-input-addin" style="border:0px;font-weight: bold;" value="总计：0元" disabled>';
+				naiyo += '<span class="mui-icon mui-icon-bg"></span>';
+				naiyo += '</div>';
+				naiyo += '</div>';
+				naiyo += '</div>';
+				li.innerHTML = naiyo;
+				uiList.appendChild(li);
+				
+				
+				};
+			};
+			
+			function countMoney(count){
+				
+				var distance = document.getElementById("distance"+count);
+				var julivalue = distance.value;
+				if(isNaN(julivalue)){
+					/*mui.alert("你输入的不是数字，请重新输入。")*/
+					plus.nativeUI.toast("你输入的不是数字，请重新输入。");
+					distance.value = '';
+					distance.focus();
+					return false;
+				}else{
+					distance.value = julivalue + 'km';
+				}
+				var money = document.getElementById("money"+count);
+				if(julivalue != ''){
+					var countMoney = (julivalue*param1)*price+(julivalue*param2) 
+					money.value = '总计：'+countMoney.toFixed(2)+'元';
+				}else{
+					money.value = '总计：'+0+'元';
+				}
+			};
+			
+		mui.plusReady(function() {
+			
+			addBtnEventListner();
+			
+			//普通示例
+			userPicker = new mui.PopPicker();
+			getDbParam();
+			
+		});
+		
+		// 从字典表中取得参数
+		function getDbParam(){
+			mui.ajax(API_ADDRESS+'traffic/queryTrafficParam.do', {
+				dataType: 'json', //服务器返回json格式数据
+				type: 'post', //HTTP请求类型
+				timeout: 5000, //超时时间设置为10秒；
+				success: function(data) {
+					//服务器返回响应，根据响应结果，分析是否登录成功；
+					console.log("success");
+					console.log( JSON.stringify(data.result));
+					var obj = data.result.outputList;
+					if(obj.length > 0){
+						for(var i = 0; i < obj.length; i++){
+							if('param' == obj[i].flag){
+								if('ShiJYYJE' == obj[i].code){
+									price = obj[i].name
+								}else if('ShiJYYS' == obj[i].code){
+									param1 = obj[i].name
+								}else if('YongCBT' == obj[i].code){
+									param2 = obj[i].name
+								}
+							}else{
+								if('01' == obj[i].code){
+									var carType = {};
+									carType.value = obj[i].code;
+									carType.text = obj[i].name;
+									carTypeList.push(carType);
+								}else if('02' == obj[i].code){
+									var carType = {};
+									carType.value = obj[i].code;
+									carType.text = obj[i].name;
+									carTypeList.push(carType);
+								}else if('03' == obj[i].code){
+									var carType = {};
+									carType.value = obj[i].code;
+									carType.text = obj[i].name;
+									carTypeList.push(carType);
+								}
+							}
+						}
+						
+						userPicker.setData(carTypeList);
+					}else{
+						plus.nativeUI.toast('参数取得失败，请重新操作。');
+					}
+				},
+				error: function(xhr, type, errorThrown) { //异常处理；
+					//plus.nativeUI.closeWaiting();
+					mui.alert('数据服务器链接失败', '错误', function() {
+					
+					});
+				}
+			});
+		};
+		
+		//添加查询按钮监听
+		function addBtnEventListner() {
+			// 一页加载10条记录
+			var pageSize = 10;
+			
+			document.getElementById("commit").addEventListener('tap',function(){
+				commit();
+			})
+		};
+		
+		
+		
+		function commit(){
+			var btns = mui('.mui-input-addin');
+			var flag = true;
+			btns.each(function(i, btn) {
+				if(btn.value == ''){
+					/*mui.alert("请填写信息完整后再继续添加");*/
+					plus.nativeUI.toast("请填写信息完整后再继续添加");
+					btn.focus();
+					flag = false;
+				}
+				
+				return flag;
+			});
+				
+			if(flag){
+			//显示历史一览用
+			//plus.nativeUI.showWaiting("正在加载");
+			console.log(API_ADDRESS+'traffic/updateTraffic.do');
+			
+			var strStart = [];
+			var strDestination = [];
+			var strCompanycase = [];
+			var strStartDate = [];
+			var strShowUserPicker = [];
+			var strDistance = [];
+			var strMoney = [];
+			for(var i=1;i<=count;i++){
+				strStart.push(document.getElementById("start"+i).value.trim());
+				strDestination.push(document.getElementById("destination"+i).value.trim());
+				strCompanycase.push(document.getElementById("Companycase"+i).value.trim());
+				strStartDate.push(document.getElementById("startDate"+i).value.trim());
+				strShowUserPicker.push(document.getElementById("showUserPicker"+i).value.trim());
+				strDistance.push(document.getElementById("distance"+i).value.trim().replace('km',''));
+				strMoney.push(document.getElementById("money"+i).value.trim().replace('总计：','').replace('元',''));
+			}
+			
+			mui.ajax(API_ADDRESS+'traffic/updateTraffic.do', {
+				data: {
+					start: strStart,
+					destination: strDestination,
+					Companycase: strCompanycase,
+					startDate: strStartDate,
+					showUserPicker: strShowUserPicker,
+					distance: strDistance,
+					money: strMoney,
+					gh: localStorage.getItem('loginName')
+				},
+				dataType: 'json', //服务器返回json格式数据
+				type: 'post', //HTTP请求类型
+				timeout: 5000, //超时时间设置为10秒；
+				success: function(data) {
+					//服务器返回响应，根据响应结果，分析是否登录成功；
+					console.log("success");
+					console.log( JSON.stringify(data.result));
+					var obj = data.result;
+					if(obj.count > 0){
+						// 登录成功
+						pageJump('reimbursementRecord.html');
+						plus.nativeUI.toast('信息提交成功。');
+					}else{
+						plus.nativeUI.toast('信息提交失败，请重新提交。');
+					}
+					
+					//plus.nativeUI.closeWaiting();
+				},
+				error: function(xhr, type, errorThrown) { //异常处理；
+					//plus.nativeUI.closeWaiting();
+					mui.alert('数据服务器链接失败', '错误', function() {
+					
+					});
+				}
+			});
+			
+			}
+		};
+			
+		// 取得时间
+		function getDate(count){
+			
+				var startDate = document.getElementById("startDate"+count);
+				var optionsJson = startDate.getAttribute('data-options') || '{}';
+				var options = JSON.parse(optionsJson);
+				var id = startDate.getAttribute('id');
+				var picker = new mui.DtPicker(options);
+				picker.show(function(rs) {
+					startDate.value = rs.text;
+					picker.dispose();
+				});	
+		};
+		
+		//普通示例
+			var userPicker;
+		// 取得车型
+		function carType(count){
+			
+			var showUserPickerinput = document.getElementById("showUserPicker"+count);
+				userPicker.show(function(items) {
+					showUserPickerinput.value = items[0].text;
+					//返回 false 可以阻止选择框的关闭
+					//return false;
+				});
+		};
+		</script>
+		<link rel="stylesheet" href="../css/common.css" type="text/css" charset="utf-8"/>
+	</head>
+	<body style="background: white;">
+		<header class="mui-bar mui-bar-nav" style="background: #209153;">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left" style="color: white;"></a>
+			<a class="mui-icon mui-icon-Gadd mui-pull-right" onclick='Gadd()'></a>
+			<h1 class="mui-title" style="color: white;">交通报销</h1>
+		</header>
+
+		<ul id="list" class="mui-table-view mui-table-view-chevron">
+			<li class="mui-table-view-li">
+				<!--第一条记录使用 class="dcontent"-->
+				<div id="dcontent" class="dcontent">
+					<br/>
+					<div class="mui-input-row mui-search">
+						<div>
+							<span class="mui-icon mui-icon-start"></span>
+							<input id="start1" class="mui-input-search mui-input-addin"   placeholder="输入起点">
+							<span class="mui-icon mui-icon-archives" onclick="getGeocode('start1')"></span>
+						</div>
+
+						<div>
+							<span class="mui-icon mui-icon-destination"></span>
+							<input id="destination1" class="mui-input-search mui-input-addin"   placeholder="输入终点">
+							<span class="mui-icon mui-icon-archives" onclick="getGeocode('destination1')"></span>
+						</div>
+						<div>
+							<span class="mui-icon mui-icon-case"></span>
+							<input id="startDate1" name="startDate"  data-options='{"type":"datetime"}' placeholder="输入时间" class="mui-input-search mui-input-addin">
+							<span class="mui-icon mui-icon-date" onclick="getDate(1)"></span>
+						</div>
+						<div>
+							<span class="mui-icon mui-icon-case"></span>
+							<input id="showUserPicker1" class="mui-input-search mui-input-addin"  placeholder="输入车型" >
+							<span class="mui-icon mui-icon-carType" onclick="carType(1)"></span>
+						</div>
+						<div>
+							<span class="mui-icon mui-icon-money"></span>
+							<input id="distance1" class="mui-input-search mui-input-addin"  onblur="countMoney(1)"   placeholder="输入公里数">
+							<span class="mui-icon mui-icon-bg" hidden="hidden"></span>
+						</div>
+						<div>
+							<span class="mui-icon mui-icon-case"></span>
+							<input id="Companycase1" class="mui-input-search mui-input-addin"   placeholder="输入事由">
+							<span class="mui-icon mui-icon-bg"></span>
+						</div>
+						<div>
+							<span class="mui-icon mui-icon-money"></span>
+							<input id="money1" class="mui-input-search mui-input-addin" style="border:0px;font-weight: bold;" value="总计：0元" disabled>
+							<span class="mui-icon mui-icon-bg"></span>
+						</div>
+						
+					</div>
+				</div>
+			</li>
+			
+		</ul>
+		<div class="mui-content-padded">
+				<button id="commit" class="mui-btn mui-btn-commit mui-btn-primary">提交</button>
+		</div>
+	
+	</body>
+	<script type="text/javascript" src="../js/immersed.js" ></script>
+	
+</html>

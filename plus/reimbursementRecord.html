@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>报销记录</title>
+		<!--上拉刷新  meta也要修改-->
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+		<link rel="stylesheet" href="../css/mui.min.css" />
+		<link rel="stylesheet" href="../css/appCommon.css" />
+		<style>
+			/**
+			 * 体检卡
+			 */
+			.mui-icon-level:before{
+				content: '\e438';
+				color: #EC971F;
+				font-size: 20px;
+			}
+			
+			.mui-record-span{
+				margin-left: 5px;
+				font-size: 16px;
+			}
+			.mui-record-font{
+				font-size: 16px;
+			}
+			.mui-font{
+					color: #209153;
+					font-size: 18px;
+				}
+
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav" style="background: #209153;">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left" style="color: white;"></a>
+			<h1 class="mui-title" style="color: white;">报销记录</h1>
+		</header>
+		<div class="mui-content mui-scroll-wrapper" id="pullrefresh">
+				
+			<!--下拉刷新容器-->
+			<!--实现下拉刷新加载 id="pullrefresh"  mui-scroll-wrapper 这两个属性必加-->
+			<div  class="mui-card " style="margin-bottom: 35px;margin: 2px 0px;">
+				<!--<div class="mui-scroll"> 必加-->
+				<div >
+					<ul class="mui-table-view">
+						
+					</ul>
+				</div>
+			</div>
+		</div>
+		<script src="../js/mui.min.js"></script>
+		<script type="text/javascript" src="../js/app.js" ></script>
+		<script type="text/javascript" charset="utf-8">
+			mui.init({
+				pullRefresh: {
+					container: '#pullrefresh',
+					up: {
+						contentrefresh: '正在加载...',
+						contentnomore:'没有更多数据了',//可选，请求完毕若没有更多数据时显示的提醒内容；
+						callback: pullupRefresh
+					}
+				}
+			});
+			
+			var count = 0;
+			var pageStart = 0;
+			/**
+			 * 上拉加载具体业务实现
+			 */
+			function pullupRefresh() {
+				setTimeout(function() {
+							search();
+						}, 500);
+			}
+
+			function search(){
+			//显示历史一览用
+			console.log(API_ADDRESS+'traffic/queryTraffic.do');
+			mui.ajax(API_ADDRESS+'traffic/queryTraffic.do', {
+				data: {
+					pageStart: pageStart,
+					pageSize: '10',
+					gh:localStorage.getItem('loginName')
+				},
+				dataType: 'json', //服务器返回json格式数据
+				type: 'post', //HTTP请求类型
+				timeout: 5000, //超时时间设置为10秒；
+				success: function(data) {
+					//服务器返回响应，根据响应结果，分析是否登录成功；
+					console.log("success");
+					console.log( JSON.stringify(data.result));
+					var obj = data.result.outputList;
+					var total = '0';
+					var table = document.body.querySelector('.mui-table-view');
+					var cells = document.body.querySelectorAll('.mui-table-view-cell');
+					if(obj != null && obj.length>0){
+						// 数据总条数
+						total = obj[0].total;
+					}
+					
+					for (var i = 0; i < obj.length; i++) {
+						var li = document.createElement('li');
+						li.className = 'mui-table-view-cell  mui-media';
+						var naiyo = '';
+						naiyo += '<a onclick="pageJump('+obj[i].id+')">';
+						naiyo += '<div class="mui-media-body">';
+						naiyo += '<p><span class="mui-font">工号:</span><span class="mui-record-span">'+obj[i].gh+'</span></p>';
+						naiyo += '<p><span class="mui-font">金额:</span><span class="mui-record-span">'+obj[i].baoxje+'</span><span class="mui-record-font">元</span></p>';
+						naiyo += '<p><span class="mui-font">审核状态:</span><span class="mui-record-span">'+obj[i].checkstate+'</span></p>';
+						naiyo += '<p><span class="mui-font">提交时间:</span><span class="mui-record-span">'+obj[i].createdon+'</span></p>';
+						naiyo += '</div>';
+						naiyo += '</a>';
+						li.innerHTML = naiyo;
+						table.appendChild(li);
+						
+						// 数据计数
+						count++;
+					}
+					pageStart = pageStart + 10;
+					if(total == '0'){
+						mui('#pullrefresh').pullRefresh().endPullupToRefresh(true);
+					}else{
+						mui('#pullrefresh').pullRefresh().endPullupToRefresh((count >= total)); //参数为true代表没有更多数据了。
+					}
+					
+					
+					//plus.nativeUI.closeWaiting();
+				},
+				error: function(xhr, type, errorThrown) { //异常处理；
+					//plus.nativeUI.closeWaiting();
+					mui.alert('数据服务器链接失败', '错误', function() {
+					
+					});
+				}
+			});
+		};
+		
+		//ios用户启动将token上传服务器
+		function pageJump(baoxdId) {
+			mui.openWindow({
+				url: 'trafficRecord.html',
+				id: 'trafficRecord.html',
+				waiting: {
+					autoShow: false //自动显示等待框，默认为true
+				},
+				extras:{
+			        baoxdId:baoxdId
+			    }
+			});
+		}
+			if (mui.os.plus) {
+				mui.plusReady(function() {
+					setTimeout(function() {
+						mui('#pullrefresh').pullRefresh().pullupLoading();
+					}, 1000);
+
+				});
+			} else {
+				mui.ready(function() {
+					mui('#pullrefresh').pullRefresh().pullupLoading();
+				});
+			}
+		</script>
+	</body>
+
+</html>
